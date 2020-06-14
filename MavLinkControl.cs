@@ -17,11 +17,10 @@ namespace App
         HashSet<uint> _messageTypes = new HashSet<uint>();
         System.Timers.Timer _heartbeatTimer = new System.Timers.Timer(1000);
 
-        public byte GcsSystemId { get; } = 255;
-        public byte GcsComponentId { get; } = 190;
-
-        public byte AutopilotSystemId { get; } = 1;
-        public byte AutopilotComponentId { get; } = 1;
+        private readonly byte _gcsSystemId = 255;
+        private readonly byte _gcsComponentId = 190;
+        private readonly byte _autopilotSystemId = 1;
+        private readonly byte _autopilotComponentId = 1;
 
         public MavLinkControl(UdpClient client, IPEndPoint sendIP)
         {
@@ -48,7 +47,7 @@ namespace App
                 mavlink_version = 3,
                 system_status = 0,
                 type = (byte)MAVLink.MAV_TYPE.GCS
-            }, false, GcsSystemId, GcsComponentId, _sequenceNumber++);
+            }, false, _gcsSystemId, _gcsComponentId, _sequenceNumber++);
 
             await _udpClient.SendAsync(sendpacket, sendpacket.Length, _sendIp);
         }
@@ -58,8 +57,8 @@ namespace App
             var sendpacket = _mavParse.GenerateMAVLinkPacket20(MAVLink.MAVLINK_MSG_ID.COMMAND_LONG,
             new MAVLink.mavlink_command_long_t()
             {
-                target_system = AutopilotSystemId,
-                target_component = AutopilotComponentId,
+                target_system = _autopilotSystemId,
+                target_component = _autopilotComponentId,
                 command = (ushort)MAVLink.MAV_CMD.TAKEOFF,
                 param1 = 0,
                 param2 = 0,
@@ -68,7 +67,7 @@ namespace App
                 param5 = 0,
                 param6 = 0,
                 param7 = 40,
-            }, false, GcsSystemId, GcsComponentId, _sequenceNumber++);
+            }, false, _gcsSystemId, _gcsComponentId, _sequenceNumber++);
 
             await _udpClient.SendAsync(sendpacket, sendpacket.Length, _sendIp);
         }
@@ -78,8 +77,8 @@ namespace App
             var sendpacket = _mavParse.GenerateMAVLinkPacket20(MAVLink.MAVLINK_MSG_ID.COMMAND_LONG,
             new MAVLink.mavlink_command_long_t()
             {
-                target_system = AutopilotSystemId,
-                target_component = AutopilotComponentId,
+                target_system = _autopilotSystemId,
+                target_component = _autopilotComponentId,
                 command = (ushort)MAVLink.MAV_CMD.COMPONENT_ARM_DISARM,
                 confirmation = 0,
                 param1 = 1,
@@ -89,7 +88,7 @@ namespace App
                 param5 = 0,
                 param6 = 0,
                 param7 = 0,
-            }, false, GcsSystemId, GcsComponentId, _sequenceNumber++);
+            }, false, _gcsSystemId, _gcsComponentId, _sequenceNumber++);
 
             await _udpClient.SendAsync(sendpacket, sendpacket.Length, _sendIp);
         }
@@ -99,8 +98,8 @@ namespace App
             var sendpacket = _mavParse.GenerateMAVLinkPacket20(MAVLink.MAVLINK_MSG_ID.COMMAND_LONG,
             new MAVLink.mavlink_command_long_t()
             {
-                target_system = AutopilotSystemId,
-                target_component = AutopilotComponentId,
+                target_system = _autopilotSystemId,
+                target_component = _autopilotComponentId,
                 command = (ushort)MAVLink.MAV_CMD.COMPONENT_ARM_DISARM,
                 confirmation = 0,
                 param1 = 0,
@@ -110,7 +109,7 @@ namespace App
                 param5 = 0,
                 param6 = 0,
                 param7 = 0,
-            }, false, GcsSystemId, GcsComponentId, _sequenceNumber++);
+            }, false, _gcsSystemId, _gcsComponentId, _sequenceNumber++);
 
             await _udpClient.SendAsync(sendpacket, sendpacket.Length, _sendIp);
         }
@@ -122,8 +121,8 @@ namespace App
             {
                 base_mode = 1,
                 custom_mode = (byte)mode,
-                target_system = AutopilotSystemId,
-            }, false, GcsSystemId, GcsComponentId, _sequenceNumber++);
+                target_system = _autopilotSystemId,
+            }, false, _gcsSystemId, _gcsComponentId, _sequenceNumber++);
 
             await _udpClient.SendAsync(sendpacket, sendpacket.Length, _sendIp);
         }
@@ -133,12 +132,12 @@ namespace App
             var telemetryRequest = _mavParse.GenerateMAVLinkPacket20(MAVLink.MAVLINK_MSG_ID.REQUEST_DATA_STREAM,
             new MAVLink.mavlink_request_data_stream_t()
             {
-                target_system = AutopilotSystemId,
-                target_component = AutopilotComponentId,
+                target_system = _autopilotSystemId,
+                target_component = _autopilotComponentId,
                 req_message_rate = 2,
                 req_stream_id = (byte)MAVLink.MAV_DATA_STREAM.ALL,
                 start_stop = 1,
-            }, false, GcsSystemId, GcsComponentId, _sequenceNumber++);
+            }, false, _gcsSystemId, _gcsComponentId, _sequenceNumber++);
 
             await _udpClient.SendAsync(telemetryRequest, telemetryRequest.Length, _sendIp);
         }
@@ -155,8 +154,8 @@ namespace App
             new MAVLink.mavlink_set_position_target_global_int_t()
             {
                 time_boot_ms = 0,
-                target_system = AutopilotSystemId,
-                target_component = AutopilotComponentId,
+                target_system = _autopilotSystemId,
+                target_component = _autopilotComponentId,
                 afx = 0,
                 afy = 0,
                 afz = 0,
@@ -170,7 +169,7 @@ namespace App
                 vz = 0,
                 yaw = 0,
                 yaw_rate = 0
-            }, false, GcsSystemId, GcsComponentId, _sequenceNumber++);
+            }, false, _gcsSystemId, _gcsComponentId, _sequenceNumber++);
 
             await _udpClient.SendAsync(sendpacket, sendpacket.Length, _sendIp);
         }
