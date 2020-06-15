@@ -20,10 +20,11 @@ namespace App
             udpClient.MulticastLoopback = false;
             udpClient.JoinMulticastGroup(multicastGroup);
             var sendIp = new IPEndPoint(multicastGroup, port);
+            var mavlinkService = new UdpMavLinkService(udpClient, sendIp);
 
-            var mavlinkControl = new MavLinkControl(udpClient, sendIp);
+            var mavlinkControl = new MavLinkControl(mavlinkService);
             
-            Task.Run(() => mavlinkControl.ListenToMavlinkPackets());
+            Task.Run(() => mavlinkService.ListenToMavlinkPackets());
             
             while (true)
             {
@@ -74,7 +75,7 @@ namespace App
                             double longitude = 149.1652363 * Math.PI / 180.0;
                             double altitudeMsl = 624.02;
 
-                            _ = mavlinkControl.CommandLoiter(latitude, longitude, altitudeMsl);
+                            _ = mavlinkControl.CommandLoiter(new Location3d(latitude, longitude, altitudeMsl));
                             Console.WriteLine("Loiter High");
                             break;
                         }
@@ -84,7 +85,7 @@ namespace App
                             double longitude = 149.1652363 * Math.PI / 180.0;
                             double altitudeMsl = 200.0;
 
-                            _ = mavlinkControl.CommandLoiter(latitude, longitude, altitudeMsl);
+                            _ = mavlinkControl.CommandLoiter(new Location3d(latitude, longitude, altitudeMsl));
 
                             Console.WriteLine("Loiter Low");
                             break;
