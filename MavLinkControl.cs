@@ -1,16 +1,12 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Threading.Tasks;
 
 namespace App
 {
     class MavLinkControl
     {
-        IMavLinkService _mavLinkService;
-        System.Timers.Timer _heartbeatTimer = new System.Timers.Timer(1000);
-
-        private readonly byte _autopilotSystemId = 1;
-        private readonly byte _autopilotComponentId = 1;
+        private readonly IMavLinkService _mavLinkService;
+        private readonly System.Timers.Timer _heartbeatTimer = new System.Timers.Timer(1000);
 
         public MavLinkControl(IMavLinkService mavLinkService)
         {
@@ -57,8 +53,8 @@ namespace App
         {
             var message = new MAVLink.mavlink_command_long_t()
             {
-                target_system = _autopilotSystemId,
-                target_component = _autopilotComponentId,
+                target_system = MavLinkConstants.AUTOPILOT_SYSTEM_ID,
+                target_component = MavLinkConstants.AUTOPILOT_COMPONENT_ID,
                 command = (ushort)MAVLink.MAV_CMD.TAKEOFF,
                 param1 = 0,
                 param2 = 0,
@@ -76,8 +72,8 @@ namespace App
         {
             var message = new MAVLink.mavlink_command_long_t()
             {
-                target_system = _autopilotSystemId,
-                target_component = _autopilotComponentId,
+                target_system = MavLinkConstants.AUTOPILOT_SYSTEM_ID,
+                target_component = MavLinkConstants.AUTOPILOT_COMPONENT_ID,
                 command = (ushort)MAVLink.MAV_CMD.COMPONENT_ARM_DISARM,
                 confirmation = 0,
                 param1 = 1,
@@ -96,8 +92,8 @@ namespace App
         {
             var message = new MAVLink.mavlink_command_long_t()
             {
-                target_system = _autopilotSystemId,
-                target_component = _autopilotComponentId,
+                target_system = MavLinkConstants.AUTOPILOT_SYSTEM_ID,
+                target_component = MavLinkConstants.AUTOPILOT_COMPONENT_ID,
                 command = (ushort)MAVLink.MAV_CMD.COMPONENT_ARM_DISARM,
                 confirmation = 0,
                 param1 = 0,
@@ -118,7 +114,7 @@ namespace App
             {
                 base_mode = 1,
                 custom_mode = (byte)mode,
-                target_system = _autopilotSystemId,
+                target_system = MavLinkConstants.AUTOPILOT_SYSTEM_ID,
             };
 
             await _mavLinkService.SendMessage(MAVLink.MAVLINK_MSG_ID.SET_MODE, message);
@@ -128,8 +124,8 @@ namespace App
         {
             var message = new MAVLink.mavlink_request_data_stream_t()
             {
-                target_system = _autopilotSystemId,
-                target_component = _autopilotComponentId,
+                target_system = MavLinkConstants.AUTOPILOT_SYSTEM_ID,
+                target_component = MavLinkConstants.AUTOPILOT_COMPONENT_ID,
                 req_message_rate = 2,
                 req_stream_id = (byte)MAVLink.MAV_DATA_STREAM.ALL,
                 start_stop = 1,
@@ -149,8 +145,8 @@ namespace App
             var message = new MAVLink.mavlink_set_position_target_global_int_t()
             {
                 time_boot_ms = 0,
-                target_system = _autopilotSystemId,
-                target_component = _autopilotComponentId,
+                target_system = MavLinkConstants.AUTOPILOT_SYSTEM_ID,
+                target_component = MavLinkConstants.AUTOPILOT_COMPONENT_ID,
                 afx = 0,
                 afy = 0,
                 afz = 0,

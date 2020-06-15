@@ -21,9 +21,6 @@ namespace App
         private readonly MAVLink.MavlinkParse _mavParse = new MAVLink.MavlinkParse();
         HashSet<uint> _messageTypes = new HashSet<uint>();
 
-        private readonly byte _gcsSystemId = 255;
-        private readonly byte _gcsComponentId = 190;
-
         private int _sequenceNumber = 0;
 
         public UdpMavLinkService(UdpClient udpClient, IPEndPoint sendIP)
@@ -38,8 +35,8 @@ namespace App
                 messageId,
                 message, 
                 false, 
-                _gcsSystemId, 
-                _gcsComponentId, 
+                MavLinkConstants.GCS_SYSTEM_ID, 
+                MavLinkConstants.GCS_COMPONENT_ID, 
                 _sequenceNumber++);
 
             await _udpClient.SendAsync(sendpacket, sendpacket.Length, _sendIp);
