@@ -1,4 +1,7 @@
-﻿using System;
+﻿using MavLinkTest;
+using System;
+using System.Collections;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 
 namespace App
@@ -6,11 +9,15 @@ namespace App
     class MavLinkControl
     {
         private readonly IMavLinkService _mavLinkService;
+        private readonly MavLinkMissionManager _missionManager;
         private readonly System.Timers.Timer _heartbeatTimer = new System.Timers.Timer(1000);
+
+        public bool EnableTelemetry { get; set; } = false;
 
         public MavLinkControl(IMavLinkService mavLinkService)
         {
             _mavLinkService = mavLinkService;
+            _missionManager = new MavLinkMissionManager(_mavLinkService);
 
             _heartbeatTimer.AutoReset = true;
             _heartbeatTimer.Elapsed += async (o, e) =>
@@ -27,10 +34,22 @@ namespace App
 
             mavLinkService.GlobalPositionIntReceived += (sender, packet) => 
             {
+                if (!EnableTelemetry)
+                {
+                    return;
+                }
+
                 double latitudeDegrees = packet.lat / (double)Math.Pow(10, 7);
                 double longitudeDegrees = packet.lon / (double)Math.Pow(10, 7);
                 double altMslMeters = packet.alt / (double)1000;
                 Console.WriteLine($"{latitudeDegrees} {longitudeDegrees} {altMslMeters}");
+            };
+
+            mavLinkService.StatusTextReceived += (sender, packet) =>
+            {
+                var text = System.Text.Encoding.ASCII.GetString(packet.text);
+                var severity = packet.severity;
+                Console.WriteLine($"Severity {severity}: {text}");
             };
         }
 
@@ -49,7 +68,7 @@ namespace App
             await _mavLinkService.SendMessage(MAVLink.MAVLINK_MSG_ID.HEARTBEAT, message);
         }
 
-        public async Task CommandTakeOff()
+        public async Task CommandTakeOff(double altitudeMsl)
         {
             var message = new MAVLink.mavlink_command_long_t()
             {
@@ -62,7 +81,73 @@ namespace App
                 param4 = 0,
                 param5 = 0,
                 param6 = 0,
-                param7 = 40,
+                param7 = (float)altitudeMsl,
+            };
+
+            await _mavLinkService.SendMessage(MAVLink.MAVLINK_MSG_ID.COMMAND_LONG, message);
+        }
+
+        public async Task CommandLand(Location3d location)
+        {
+            var message = new MAVLink.mavlink_command_long_t()
+            {
+                target_system = MavLinkConstants.AUTOPILOT_SYSTEM_ID,
+                target_component = MavLinkConstants.AUTOPILOT_COMPONENT_ID,
+                command = (ushort)MAVLink.MAV_CMD.LAND,
+                param1 = 0,
+                param2 = 0,
+                param3 = 0,
+                param4 = 0,
+                param5 = MavLinkUtilities.ConvertRadiansToDegreesE7(location.LatitudeInRadians),
+                param6 = MavLinkUtilities.ConvertRadiansToDegreesE7(location.LongitudeInRadians),
+                param7 = 0,
+            };
+
+            await _mavLinkService.SendMessage(MAVLink.MAVLINK_MSG_ID.COMMAND_LONG, message);
+        }
+
+        public async Task CommandLandHere()
+        {
+            // https://ardupilot.org/copter/docs/common-mavlink-mission-command-messages-mav_cmd.html#mav-cmd-nav-land
+            var here = new Location3d(0, 0, 0);
+            await CommandLand(here);
+        }
+
+        public async Task CommandReturnToLaunchOrHome()
+        {
+            var message = new MAVLink.mavlink_command_long_t()
+            {
+                target_system = MavLinkConstants.AUTOPILOT_SYSTEM_ID,
+                target_component = MavLinkConstants.AUTOPILOT_COMPONENT_ID,
+                command = (ushort)MAVLink.MAV_CMD.RETURN_TO_LAUNCH,
+                confirmation = 0,
+                param1 = 0,
+                param2 = 0,
+                param3 = 0,
+                param4 = 0,
+                param5 = 0,
+                param6 = 0,
+                param7 = 0,
+            };
+
+            await _mavLinkService.SendMessage(MAVLink.MAVLINK_MSG_ID.COMMAND_LONG, message);
+        }
+
+        public async Task CommandRallyPoint(Location3d location)
+        {
+            var message = new MAVLink.mavlink_command_long_t()
+            {
+                target_system = MavLinkConstants.AUTOPILOT_SYSTEM_ID,
+                target_component = MavLinkConstants.AUTOPILOT_COMPONENT_ID,
+                command = (ushort)MAVLink.MAV_CMD.RALLY_POINT,
+                confirmation = 0,
+                param1 = 0,
+                param2 = 0,
+                param3 = 0,
+                param4 = 0,
+                param5 = MavLinkUtilities.ConvertRadiansToDegreesE7(location.LatitudeInRadians),
+                param6 = MavLinkUtilities.ConvertRadiansToDegreesE7(location.LongitudeInRadians),
+                param7 = (float)location.AltitudeMslInMeters,
             };
 
             await _mavLinkService.SendMessage(MAVLink.MAVLINK_MSG_ID.COMMAND_LONG, message);
@@ -163,6 +248,11 @@ namespace App
             };
 
             await _mavLinkService.SendMessage(MAVLink.MAVLINK_MSG_ID.SET_POSITION_TARGET_GLOBAL_INT, message);
+        }
+
+        public async Task CommandMission(IList<Location3d> mission)
+        {
+            await _missionManager.CommandMission(mission);
         }
     }
 }

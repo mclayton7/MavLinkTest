@@ -1,4 +1,5 @@
-﻿using System;
+﻿using MavLinkTest;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Net;
@@ -34,6 +35,7 @@ namespace App
                 {
                     case "telemetry":
                         {
+                            mavlinkControl.EnableTelemetry = !mavlinkControl.EnableTelemetry;
                             Console.WriteLine("Requesting datastream");
                             _ = mavlinkControl.RequestDataStream();
                             break;
@@ -59,7 +61,8 @@ namespace App
                         }
                     case "takeoff":
                         {
-                            _ = mavlinkControl.CommandTakeOff();
+                            double takeoffAltitudeMsl = 700.0;
+                            _ = mavlinkControl.CommandTakeOff(takeoffAltitudeMsl);
                             Console.WriteLine("Takeoff");
                             break;
                         }
@@ -71,8 +74,8 @@ namespace App
                         }
                     case "loiter-high":
                         {
-                            double latitude = -35.3632612 * Math.PI / 180.0;
-                            double longitude = 149.1652363 * Math.PI / 180.0;
+                            double latitude = MavLinkUtilities.DegreesToRadians(-35.3632612);
+                            double longitude = MavLinkUtilities.DegreesToRadians(149.1652363);
                             double altitudeMsl = 624.02;
 
                             _ = mavlinkControl.CommandLoiter(new Location3d(latitude, longitude, altitudeMsl));
@@ -81,13 +84,32 @@ namespace App
                         }
                     case "loiter-low":
                         {
-                            double latitude = -34.3632612 * Math.PI / 180.0;
-                            double longitude = 149.1652363 * Math.PI / 180.0;
+                            double latitude = MavLinkUtilities.DegreesToRadians(-34.3632612);
+                            double longitude = MavLinkUtilities.DegreesToRadians(149.1652363);
                             double altitudeMsl = 200.0;
 
                             _ = mavlinkControl.CommandLoiter(new Location3d(latitude, longitude, altitudeMsl));
 
                             Console.WriteLine("Loiter Low");
+                            break;
+                        }
+
+                    case "mission":
+                        {
+                            var mission = new List<Location3d> {
+                                new Location3d(
+                                    MavLinkUtilities.DegreesToRadians(-34.3632612),
+                                    MavLinkUtilities.DegreesToRadians(149.1652363),
+                                    650.0),
+                                new Location3d(
+                                    MavLinkUtilities.DegreesToRadians(-35.3632612),
+                                    MavLinkUtilities.DegreesToRadians(146.1652363),
+                                    660.0),
+                            };
+
+                            _ = mavlinkControl.CommandMission(mission);
+
+                            Console.WriteLine("Mission Sent");
                             break;
                         }
                 }

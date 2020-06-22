@@ -47,3 +47,10 @@ land
 ```
 disarm
 ```
+
+# MavLink References
+[MavLink Serialization](https://mavlink.io/en/guide/serialization.html)
+[MavLink Messages](https://mavlink.io/en/messages/common.html)
+[MavLink Gimbal Control](https://mavlink.io/en/services/gimbal_v2.html)
+[MavLink C# Library](https://www.nuget.org/packages/MAVLink/)
+[ArduCopter Missions](https://ardupilot.org/copter/docs/common-mavlink-mission-command-messages-mav_cmd.html)
